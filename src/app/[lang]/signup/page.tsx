@@ -19,13 +19,21 @@ export default function Signup() {
     setError("");
     setLoading(true);
 
-    const res = await authClient.signUp.email({ name, email, password });
+    try {
+      const res = await authClient.signUp.email({
+        name,
+        email,
+        password,
+        fetchOptions: { onSuccess: () => router.push(`/${lang}/play`) },
+      });
 
-    if (res.error) {
-      setError(res.error.message ?? "Sign up failed");
+      if (res.error) {
+        setError(res.error.message ?? "Sign up failed");
+      }
+    } catch {
+      setError("Connection error. Please try again.");
+    } finally {
       setLoading(false);
-    } else {
-      router.push(`/${lang}/play`);
     }
   };
 

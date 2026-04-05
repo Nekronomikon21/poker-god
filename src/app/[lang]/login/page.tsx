@@ -18,13 +18,20 @@ export default function Login() {
     setError("");
     setLoading(true);
 
-    const res = await authClient.signIn.email({ email, password });
+    try {
+      const res = await authClient.signIn.email({
+        email,
+        password,
+        fetchOptions: { onSuccess: () => router.push(`/${lang}/play`) },
+      });
 
-    if (res.error) {
-      setError(res.error.message ?? "Sign in failed");
+      if (res.error) {
+        setError(res.error.message ?? "Sign in failed");
+      }
+    } catch {
+      setError("Connection error. Please try again.");
+    } finally {
       setLoading(false);
-    } else {
-      router.push(`/${lang}/play`);
     }
   };
 
