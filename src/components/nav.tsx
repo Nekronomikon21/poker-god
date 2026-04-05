@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useI18n } from "@/i18n/dictionary-context";
@@ -12,13 +11,7 @@ export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
   const { dict, locale } = useI18n();
-  const [user, setUser] = useState<{ name: string } | null>(null);
-
-  useEffect(() => {
-    authClient.getSession().then((res) => {
-      setUser(res.data?.user ?? null);
-    });
-  }, [pathname]);
+  const { data: session } = authClient.useSession();
 
   const links = [
     { href: `/${locale}`, label: dict.nav.home },
@@ -33,7 +26,6 @@ export default function Nav() {
     { href: `/${locale}/about`, label: dict.nav.about },
   ];
 
-  // Strip locale prefix for comparison
   const pathWithoutLocale =
     pathname.replace(new RegExp(`^/${locale}`), "") || "/";
 
@@ -88,13 +80,12 @@ export default function Nav() {
               </option>
             ))}
           </select>
-          {user ? (
+          {session?.user ? (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">{user.name}</span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">{session.user.name}</span>
               <button
                 onClick={async () => {
                   await authClient.signOut();
-                  setUser(null);
                   router.push(`/${locale}`);
                 }}
                 className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 transition-colors"

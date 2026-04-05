@@ -1,17 +1,15 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
 interface AuthWallContextValue {
-  isLoggedIn: boolean;
   requireAuth: (action: () => void) => void;
 }
 
 const AuthWallContext = createContext<AuthWallContextValue>({
-  isLoggedIn: false,
   requireAuth: () => {},
 });
 
@@ -21,27 +19,19 @@ export function useAuthWall() {
 
 export function AuthWallProvider({ children }: { children: React.ReactNode }) {
   const { lang } = useParams<{ lang: string }>();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { data: session } = authClient.useSession();
   const [showModal, setShowModal] = useState(false);
-  const [checkedOnce, setCheckedOnce] = useState(false);
-
-  useEffect(() => {
-    authClient.getSession().then((res) => {
-      setIsLoggedIn(!!res.data?.user);
-      setCheckedOnce(true);
-    });
-  }, []);
 
   const requireAuth = useCallback((action: () => void) => {
-    if (isLoggedIn) {
+    if (session?.user) {
       action();
     } else {
       setShowModal(true);
     }
-  }, [isLoggedIn]);
+  }, [session]);
 
   return (
-    <AuthWallContext value={{ isLoggedIn, requireAuth }}>
+    <AuthWallContext value={{ requireAuth }}>
       {children}
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -50,7 +40,7 @@ export function AuthWallProvider({ children }: { children: React.ReactNode }) {
               Sign in required
             </h2>
             <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400 text-center leading-6">
-              Create a free account or log in to use interactive features like the trainer, calculator, and decision exercises.
+              Create a free account or log in to use interactive features.
             </p>
             <div className="mt-6 flex flex-col gap-3">
               <Link
