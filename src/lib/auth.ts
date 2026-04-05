@@ -1,17 +1,12 @@
 import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
-import { createClient } from "@libsql/client";
-
-const client = createClient({
-  url: process.env.DATABASE_URL ?? "file:./sqlite.db",
-  authToken: process.env.DATABASE_AUTH_TOKEN,
-});
+import { db } from "./db";
 
 export const auth = betterAuth({
-  database: {
-    type: "sqlite",
-    db: client,
-  },
+  database: drizzleAdapter(db, {
+    provider: "sqlite",
+  }),
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
   plugins: [nextCookies()],
