@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes ko-entrance {
+  0% {
+    opacity: 0;
+    transform: scale(3) rotate(-10deg);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1) rotate(2deg);
+  }
+  30% {
+    transform: scale(1.1) rotate(-1deg);
+  }
+  40% {
+    transform: scale(1) rotate(0deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8) rotate(5deg);
+  }
+}
+
+.animate-ko-entrance {
+  animation: ko-entrance 5s ease-out forwards;
+}
