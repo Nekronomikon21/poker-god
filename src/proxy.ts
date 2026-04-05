@@ -5,6 +5,9 @@ import { locales, defaultLocale } from "@/i18n/config";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Skip API routes
+  if (pathname.startsWith("/api")) return;
+
   const hasLocale = locales.some(
     (loc) => pathname.startsWith(`/${loc}/`) || pathname === `/${loc}`
   );
