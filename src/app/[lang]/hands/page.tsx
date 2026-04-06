@@ -95,16 +95,16 @@ export default async function Hands({
         <table className="border-collapse">
           <thead>
             <tr>
-              <th className="w-8 h-8" />
+              <th className="w-6 h-6" />
               {RANKS.map((r) => (
-                <th key={r} className="w-10 h-8 text-center text-xs font-bold text-zinc-500 dark:text-zinc-400">{r}</th>
+                <th key={r} className="w-9 h-6 text-center text-[10px] font-bold text-zinc-500 dark:text-zinc-400">{r}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {RANKS.map((r1, row) => (
               <tr key={r1}>
-                <td className="w-8 h-10 text-center text-xs font-bold text-zinc-500 dark:text-zinc-400">{r1}</td>
+                <td className="w-6 h-9 text-center text-[10px] font-bold text-zinc-500 dark:text-zinc-400">{r1}</td>
                 {RANKS.map((r2, col) => {
                   const tier = TIER[row][col];
                   const isPair = row === col;
@@ -118,12 +118,12 @@ export default async function Hands({
                   const wr = WIN_RATE[row][col];
                   return (
                     <td key={col}
-                      className={`relative w-12 h-12 text-center text-[10px] font-semibold rounded-sm border border-black/10 dark:border-white/10 ${TIER_COLORS[tier]}`}
+                      className={`relative w-9 h-9 text-center text-[9px] font-semibold rounded-sm border border-black/10 dark:border-white/10 leading-tight ${TIER_COLORS[tier]}`}
                     >
                       {label}
                       <br />
-                      <span className="text-[9px] opacity-70 font-normal">{wr}%</span>
-                      <span className="absolute top-0 right-0.5 text-[7px] opacity-50 font-normal">
+                      <span className="text-[8px] opacity-70 font-normal">{wr}%</span>
+                      <span className="absolute top-0 right-px text-[6px] opacity-50 font-normal">
                         {rank}
                       </span>
                     </td>
