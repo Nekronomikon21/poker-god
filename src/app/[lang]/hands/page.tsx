@@ -2,24 +2,26 @@ import type { Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import PageNav from "@/components/page-nav";
 
-// Heads-up starting hand tiers (1=premium, 5=trash)
-// Rows = first card (A..2), Cols = second card (A..2)
-// Upper-right triangle = suited, lower-left = offsuit, diagonal = pairs
+// Heads-up starting hand tiers based on heads-up equity vs random hand
+// 1=premium (top ~15%), 2=strong (~15-30%), 3=playable (~30-55%),
+// 4=marginal (~55-75%), 5=weak (bottom ~25%)
+// In heads-up: all pairs are strong, Ax suited is premium, connectors gain value
+// Upper-right = suited, lower-left = offsuit, diagonal = pairs
 const TIER: number[][] = [
   // A  K  Q  J  T  9  8  7  6  5  4  3  2
-  [  1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3 ], // A
-  [  1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4 ], // K
-  [  1, 2, 1, 1, 2, 3, 3, 4, 4, 4, 4, 4, 5 ], // Q
-  [  2, 2, 2, 1, 2, 2, 3, 4, 4, 4, 5, 5, 5 ], // J
-  [  2, 2, 3, 3, 1, 2, 3, 3, 4, 5, 5, 5, 5 ], // T
-  [  3, 3, 3, 3, 3, 2, 3, 3, 4, 4, 5, 5, 5 ], // 9
-  [  3, 4, 4, 4, 3, 3, 2, 3, 3, 4, 5, 5, 5 ], // 8
-  [  3, 4, 4, 4, 4, 4, 4, 2, 3, 3, 4, 5, 5 ], // 7
-  [  3, 4, 5, 5, 5, 4, 4, 4, 3, 3, 4, 4, 5 ], // 6
-  [  3, 4, 5, 5, 5, 5, 5, 4, 4, 3, 3, 4, 4 ], // 5
-  [  4, 5, 5, 5, 5, 5, 5, 5, 5, 4, 3, 3, 4 ], // 4
+  [  1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2 ], // A  (all Ax are strong in HU)
+  [  2, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 4, 4 ], // K
+  [  2, 2, 1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4 ], // Q
+  [  3, 3, 3, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5 ], // J
+  [  3, 3, 3, 3, 1, 2, 3, 3, 4, 4, 5, 5, 5 ], // T
+  [  3, 3, 4, 3, 3, 2, 2, 3, 3, 4, 5, 5, 5 ], // 9  (98s, 97s playable)
+  [  4, 4, 4, 4, 3, 3, 2, 3, 3, 4, 4, 5, 5 ], // 8  (87s, 86s playable)
+  [  4, 4, 4, 4, 4, 4, 3, 2, 3, 3, 4, 5, 5 ], // 7  (76s playable)
+  [  4, 5, 5, 5, 4, 4, 4, 4, 2, 3, 3, 4, 5 ], // 6  (65s playable)
+  [  4, 5, 5, 5, 5, 5, 4, 4, 4, 2, 3, 4, 4 ], // 5  (54s playable)
+  [  4, 5, 5, 5, 5, 5, 5, 5, 4, 4, 3, 3, 4 ], // 4  (small pairs strong in HU)
   [  4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 3, 4 ], // 3
-  [  4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 3 ], // 2
+  [  4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3 ], // 2
 ];
 
 // Compute individual rankings 1-169 from TIER + card values
