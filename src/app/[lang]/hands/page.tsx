@@ -118,7 +118,7 @@ export default async function Hands({
                   const wr = WIN_RATE[row][col];
                   return (
                     <td key={col}
-                      className={`relative w-9 h-9 text-center text-[9px] font-semibold rounded-sm border border-black/10 dark:border-white/10 leading-tight ${TIER_COLORS[tier]}`}
+                      className={`relative w-10 h-10 text-center text-[9px] font-semibold rounded-sm border border-black/10 dark:border-white/10 leading-tight ${TIER_COLORS[tier]}`}
                     >
                       {label}
                       <br />
