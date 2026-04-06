@@ -39,7 +39,7 @@
     "setupTitle": "Preparación",
     "setupList": [
       "Se usa una baraja estándar de 52 cartas, barajada antes de cada mano.",
-      "Cada jugador comienza con la misma cantidad de fichas (en Poker God — 1000 fichas).",
+      "Cada jugador comienza con la misma cantidad de fichas.",
       "Un jugador pone la ciega pequeña, el otro la ciega grande.",
       "Cada jugador recibe dos cartas ocultas."
     ],

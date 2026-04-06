@@ -39,7 +39,7 @@
     "setupTitle": "Setup",
     "setupList": [
       "A standard 52-card deck is used, shuffled before each hand.",
-      "Each player starts with an equal chip stack (in Poker God — 1000 chips).",
+      "Each player starts with an equal chip stack.",
       "One player posts the small blind, the other posts the big blind.",
       "Each player is dealt two private cards (hole cards) face-down."
     ],
