@@ -79,10 +79,15 @@ function CardView({ card, hidden = false, delay = 0, instant = false }: { card: 
     return () => clearTimeout(timer);
   }, [instant]);
 
-  // Bot cards: flip when hidden changes to false (showdown)
+  // Bot cards: flip when hidden changes; hide again when hidden becomes true (new deal, analysis blind mode, etc.)
   useEffect(() => {
     if (instant) {
       setShowFace(!hidden);
+      return;
+    }
+    if (hidden) {
+      mountHiddenRef.current = true;
+      setShowFace(false);
       return;
     }
     if (!hidden && mountHiddenRef.current) {
@@ -187,6 +192,8 @@ export default function Play() {
   const [startChips, setStartChips] = useState(1000);
   const [bigBlind, setBigBlind] = useState(20);
   const [replayShowBot, setReplayShowBot] = useState(false);
+  /** Increments on each new deal so bot CardView remounts with closed cards (avoids stale flip state). */
+  const [dealId, setDealId] = useState(0);
   const [skipAnim, setSkipAnim] = useState(false);
   const [showHandLabel, setShowHandLabel] = useState(false);
   const [showKO, setShowKO] = useState(false);
@@ -369,9 +376,16 @@ export default function Play() {
   }, [game]);
 
   const startNewGame = useCallback(() => {
+    // Interrupt post-hand analysis, overlays, and pending anim timers; hide opponent cards via new dealId + fresh state
     historyRef.current = [];
     setReplayIndex(null);
     setReplayShowBot(false);
+    setShowResult(false);
+    setShowKO(false);
+    setShowDefeat(false);
+    animEndRef.current = 0;
+    prevCommunityCountRef.current = 0;
+    setDealId((d) => d + 1);
     const bb = game?.bigBlind ?? bigBlind;
     if (game) {
       setGame(newGame({ playerChips: game.playerChips, botChips: game.botChips, botLevel: game.botLevel, bigBlind: bb }));
@@ -386,6 +400,12 @@ export default function Play() {
     historyRef.current = [];
     setReplayIndex(null);
     setReplayShowBot(false);
+    setShowResult(false);
+    setShowKO(false);
+    setShowDefeat(false);
+    animEndRef.current = 0;
+    prevCommunityCountRef.current = 0;
+    setDealId((d) => d + 1);
     setGame(newGame({ playerChips: startChips, botChips: startChips, botLevel, bigBlind }));
     setRaiseAmount(bigBlind);
     setShowRaisePanel(false);
@@ -493,7 +513,7 @@ export default function Play() {
         {/* Bot cards + hand name at showdown */}
         <div className="relative flex gap-1.5">
           {dg.botHand.map((c, i) => (
-            <CardView key={`bot-${i}-${replayIndex ?? "live"}-${replayShowBot}`} card={c} hidden={isReplayMode ? !replayShowBot : !dg.showBotCards} delay={i * 0.15} instant={replayIndex !== null || skipAnim} />
+            <CardView key={`bot-${i}-deal-${dealId}-${replayIndex ?? "live"}`} card={c} hidden={isReplayMode ? !replayShowBot : !dg.showBotCards} delay={i * 0.15} instant={replayIndex !== null || skipAnim} />
           ))}
           {(isReplayMode && replayShowBot) && (() => {
             const fakeDg = { ...dg, showBotCards: true };
