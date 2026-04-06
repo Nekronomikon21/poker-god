@@ -2,42 +2,46 @@ import type { Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import PageNav from "@/components/page-nav";
 
-// Heads-up starting hand tiers based on heads-up equity vs random hand
-// 1=premium (top ~15%), 2=strong (~15-30%), 3=playable (~30-55%),
-// 4=marginal (~55-75%), 5=weak (bottom ~25%)
-// In heads-up: all pairs are strong, Ax suited is premium, connectors gain value
+// Heads-up win rates vs random hand (%)
 // Upper-right = suited, lower-left = offsuit, diagonal = pairs
-const TIER: number[][] = [
-  // A  K  Q  J  T  9  8  7  6  5  4  3  2
-  [  1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2 ], // A  (all Ax are strong in HU)
-  [  2, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 4, 4 ], // K
-  [  2, 2, 1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4 ], // Q
-  [  3, 3, 3, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5 ], // J
-  [  3, 3, 3, 3, 1, 2, 3, 3, 4, 4, 5, 5, 5 ], // T
-  [  3, 3, 4, 3, 3, 2, 2, 3, 3, 4, 5, 5, 5 ], // 9  (98s, 97s playable)
-  [  4, 4, 4, 4, 3, 3, 2, 3, 3, 4, 4, 5, 5 ], // 8  (87s, 86s playable)
-  [  4, 4, 4, 4, 4, 4, 3, 2, 3, 3, 4, 5, 5 ], // 7  (76s playable)
-  [  4, 5, 5, 5, 4, 4, 4, 4, 2, 3, 3, 4, 5 ], // 6  (65s playable)
-  [  4, 5, 5, 5, 5, 5, 4, 4, 4, 2, 3, 4, 4 ], // 5  (54s playable)
-  [  4, 5, 5, 5, 5, 5, 5, 5, 4, 4, 3, 3, 4 ], // 4  (small pairs strong in HU)
-  [  4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 3, 4 ], // 3
-  [  4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3 ], // 2
+const WIN_RATE: number[][] = [
+  // A   K   Q   J   T   9   8   7   6   5   4   3   2
+  [ 85, 68, 67, 66, 66, 64, 63, 63, 62, 62, 61, 60, 59 ], // A
+  [ 66, 83, 64, 64, 63, 61, 60, 59, 58, 58, 57, 56, 55 ], // K
+  [ 65, 62, 80, 61, 61, 59, 58, 56, 55, 55, 54, 53, 52 ], // Q
+  [ 65, 62, 59, 78, 59, 57, 56, 54, 53, 52, 51, 50, 50 ], // J
+  [ 64, 61, 59, 57, 75, 56, 54, 53, 51, 49, 49, 48, 47 ], // T
+  [ 62, 59, 57, 55, 53, 72, 53, 51, 50, 48, 46, 46, 45 ], // 9
+  [ 61, 58, 55, 53, 52, 50, 69, 50, 49, 47, 45, 43, 43 ], // 8
+  [ 60, 57, 54, 52, 50, 48, 47, 67, 48, 46, 45, 43, 41 ], // 7
+  [ 59, 56, 53, 50, 48, 47, 46, 45, 64, 46, 44, 42, 40 ], // 6
+  [ 60, 55, 52, 49, 47, 45, 44, 43, 43, 61, 44, 43, 41 ], // 5
+  [ 59, 54, 51, 48, 46, 43, 42, 41, 41, 41, 58, 42, 40 ], // 4
+  [ 58, 54, 50, 48, 45, 43, 40, 39, 39, 39, 38, 55, 39 ], // 3
+  [ 57, 53, 49, 47, 44, 42, 40, 37, 37, 37, 36, 35, 51 ], // 2
 ];
 
-// Compute individual rankings 1-169 from TIER + card values
-// Sort by: tier ASC, then higher first card, then higher second card
+// Compute tiers from win rates:
+// 1 = >= 65% (premium), 2 = 57-64% (strong), 3 = 50-56% (playable),
+// 4 = 44-49% (marginal), 5 = < 44% (weak)
+function computeTier(wr: number): number {
+  if (wr >= 65) return 1;
+  if (wr >= 57) return 2;
+  if (wr >= 50) return 3;
+  if (wr >= 44) return 4;
+  return 5;
+}
+const TIER = WIN_RATE.map((row) => row.map(computeTier));
+
+// Compute rankings 1-169 sorted by win rate descending
 function computeRankings(): number[][] {
-  const entries: { row: number; col: number; tier: number; v1: number; v2: number }[] = [];
+  const entries: { row: number; col: number; wr: number }[] = [];
   for (let r = 0; r < 13; r++) {
     for (let c = 0; c < 13; c++) {
-      entries.push({ row: r, col: c, tier: TIER[r][c], v1: 14 - r, v2: 14 - c });
+      entries.push({ row: r, col: c, wr: WIN_RATE[r][c] });
     }
   }
-  entries.sort((a, b) => {
-    if (a.tier !== b.tier) return a.tier - b.tier;
-    if (a.v1 !== b.v1) return b.v1 - a.v1;
-    return b.v2 - a.v2;
-  });
+  entries.sort((a, b) => b.wr - a.wr);
   const grid = Array.from({ length: 13 }, () => Array(13).fill(0));
   entries.forEach((e, i) => { grid[e.row][e.col] = i + 1; });
   return grid;
@@ -111,12 +115,15 @@ export default async function Hands({
                       ? `${r1}${r2}s`
                       : `${r1}${r2}o`;
                   const rank = HAND_RANK[row][col];
+                  const wr = WIN_RATE[row][col];
                   return (
                     <td key={col}
-                      className={`relative w-10 h-10 text-center text-[11px] font-semibold rounded-sm border border-black/10 dark:border-white/10 ${TIER_COLORS[tier]}`}
+                      className={`relative w-12 h-12 text-center text-[10px] font-semibold rounded-sm border border-black/10 dark:border-white/10 ${TIER_COLORS[tier]}`}
                     >
                       {label}
-                      <span className="absolute top-0 right-0.5 text-[7px] opacity-60 font-normal">
+                      <br />
+                      <span className="text-[9px] opacity-70 font-normal">{wr}%</span>
+                      <span className="absolute top-0 right-0.5 text-[7px] opacity-50 font-normal">
                         {rank}
                       </span>
                     </td>
